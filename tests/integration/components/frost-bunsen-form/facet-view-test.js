@@ -51,6 +51,10 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
       {
         label: 'Baz',
         model: 'bar'
+      },
+      {
+        model: 'bar',
+        placeholder: 'placeholder'
       }
     ]
 
@@ -88,7 +92,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
       this.$(selectors.bunsen.section.clearableButton),
       'renders clearable button for each input'
     )
-      .to.have.length(2)
+      .to.have.length(3)
 
     const $headings = this.$(selectors.bunsen.section.heading)
 
@@ -96,7 +100,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
       $headings,
       'renders correct number of headings'
     )
-      .to.have.length(2)
+      .to.have.length(3)
 
     expect(
       $headings.first().text().trim(),
@@ -105,7 +109,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
       .to.equal('Foo')
 
     expect(
-      $headings.last().text().trim(),
+      $headings.eq(1).text().trim(),
       'renders correct heading text for second input'
     )
       .to.equal('Baz')
@@ -137,9 +141,21 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
       $('.frost-select'),
       'renders one select input'
     )
-      .to.have.length(1)
+      .to.have.length(2)
 
-    expectSelectWithState($hook('bunsenForm-bar').find('.frost-select'), {
+    expect(
+      this.$(selectors.bunsen.renderer.select.placeholder),
+      'renders a bunsen select placeholder component'
+    )
+      .to.have.length(2)
+
+    expect(
+      this.$(selectors.bunsen.renderer.select.placeholder).eq(1).text().trim(),
+      'renders a bunsen select placeholder component'
+    )
+      .to.equal('placeholder')
+
+    expectSelectWithState($hook('bunsenForm-bar').eq(0).find('.frost-select'), {
       text: ''
     })
 
@@ -185,7 +201,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
         this.$(selectors.bunsen.section.clearableButton),
         'renders clearable button for each input'
       )
-        .to.have.length(2)
+        .to.have.length(3)
 
       const $headings = this.$(selectors.bunsen.section.heading)
 
@@ -193,7 +209,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
         $headings,
         'renders correct number of headings'
       )
-        .to.have.length(2)
+        .to.have.length(3)
 
       expect(
         $headings.first().text().trim(),
@@ -202,7 +218,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
         .to.equal('Foo')
 
       expect(
-        $headings.last().text().trim(),
+        $headings.eq(1).text().trim(),
         'renders correct heading text for second input'
       )
         .to.equal('Baz')
@@ -234,9 +250,9 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
         $('.frost-select'),
         'renders one select input'
       )
-        .to.have.length(1)
+        .to.have.length(2)
 
-      expectSelectWithState($hook('bunsenForm-bar').find('.frost-select'), {
+      expectSelectWithState($hook('bunsenForm-bar').eq(0).find('.frost-select'), {
         text: ''
       })
 
@@ -298,7 +314,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
           this.$(selectors.bunsen.section.clearableButton),
           'renders clearable button for each input'
         )
-          .to.have.length(2)
+          .to.have.length(3)
 
         const $headings = this.$(selectors.bunsen.section.heading)
 
@@ -306,7 +322,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
           $headings,
           'renders correct number of headings'
         )
-          .to.have.length(2)
+          .to.have.length(3)
 
         expect(
           $headings.first().text().trim(),
@@ -315,7 +331,7 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
           .to.equal('Foo')
 
         expect(
-          $headings.last().text().trim(),
+          $headings.eq(1).text().trim(),
           'renders correct heading text for second input'
         )
           .to.equal('Baz')
@@ -347,9 +363,9 @@ describe('Integration: Component / frost-bunsen-form / facet view', function () 
           $('.frost-select'),
           'renders one select input'
         )
-          .to.have.length(1)
+          .to.have.length(2)
 
-        expectSelectWithState($hook('bunsenForm-bar').find('.frost-select'), {
+        expectSelectWithState($hook('bunsenForm-bar').eq(0).find('.frost-select'), {
           text: ''
         })
 

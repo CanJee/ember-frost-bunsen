@@ -28,7 +28,8 @@ export default {
         arrow: '.frost-bunsen-input-select .down-arrow',
         input: '.frost-bunsen-input-select',
         componentEl: '.frost-bunsen-input-select .frost-select',
-        items: '.frost-select-dropdown li'
+        items: '.frost-select-dropdown li',
+        placeholder: '.frost-bunsen-input-select .frost-select-placeholder .frost-select-text'
       },
       static: '.frost-bunsen-input-static',
       text: '.frost-bunsen-input-text',
