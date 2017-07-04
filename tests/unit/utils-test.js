@@ -7,7 +7,8 @@ import {
   generateLabelFromModel,
   isModelPathValid,
   isRegisteredEmberDataModel,
-  isRequired
+  isRequired,
+  removeInternalValues
 } from 'ember-frost-bunsen/utils'
 
 describe('bunsen-utils', function () {
@@ -453,6 +454,98 @@ describe('bunsen-utils', function () {
     it('returns true when the path is valid', function () {
       expect(isModelPathValid('foo', bunsenModel)).to.equal(true)
       expect(isModelPathValid('foo.bar', bunsenModel)).to.equal(true)
+    })
+  })
+
+  describe('removeInternalValues', function () {
+    it('returns an equal object when there are no internal values', function () {
+      const value = {
+        foo: {
+          bar: {
+            baz: {},
+            quux: {}
+          }
+        }
+      }
+      const withoutInternals = removeInternalValues(value)
+      expect(withoutInternals).to.eql({
+        foo: {
+          bar: {
+            baz: {},
+            quux: {}
+          }
+        }
+      })
+    })
+    it('finds and removes internal values at the top level', function () {
+      const value = {
+        foo: {
+          bar: {
+            baz: {},
+            quux: {}
+          }
+        },
+        _internal: {
+          bar: {
+            baz: {},
+            quux: {}
+          }
+        }
+      }
+      const internals = removeInternalValues(value)
+      expect(internals).to.eql({
+        foo: {
+          bar: {
+            baz: {},
+            quux: {}
+          }
+        }
+      })
+    })
+    it('finds and removes internal values at the deeper levels', function () {
+      const value = {
+        foo: {
+          bar: {
+            baz: {
+              _internal: {
+                bar: {
+                  baz: {},
+                  quux: {}
+                }
+              }
+            },
+            quux: {
+              _internal: {
+                bar: {
+                  baz: {},
+                  quux: {}
+                }
+              }
+            },
+            _internal: {
+              bar: {
+                baz: {},
+                quux: {}
+              }
+            }
+          },
+          _internal: {
+            bar: {
+              baz: {},
+              quux: {}
+            }
+          }
+        }
+      }
+      const internals = removeInternalValues(value)
+      expect(internals).to.eql({
+        foo: {
+          bar: {
+            baz: {},
+            quux: {}
+          }
+        }
+      })
     })
   })
 })

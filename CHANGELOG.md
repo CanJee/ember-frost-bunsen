@@ -1,3 +1,65 @@
+# 14.32.14 (2017-07-04)
+
+* **Fixes** a regression in labeling that would always display labels if the model was an array. It's been modified to not display the label if the cell has a renderer for the it.
+
+
+# 14.32.13 (2017-07-03)
+
+* **Fixes** the behavior when the query dependencies for the select renderer changes
+
+
+# 14.32.12 (2017-06-27)
+**Fixed** issue where inputs are unfocused when items are added to an array. This was causing inputs to lose focus when `autoAdd` feature for arrays is enabled and a user started to type into an empty input.
+
+# 14.32.11 (2017-06-23)
+ * **Updated** version of `ember-frost-date-picker`
+
+
+# 14.32.10 (2017-06-22)
+**Fixed** removal of `_internal` properties for `onChange` handler.
+**Updated** bunsen-core to fix validation for deep internal properties
+
+
+# 14.32.9 (2017-06-21)
+
+* **Fixed** an issue where view schema would have validation errors if it referenced a field that did not have its condition met.
+
+
+# 14.32.8 (2017-06-21)
+
+* **Fixes** a bug in the select renderer not displaying a label when the model enum has 0
+
+
+# 14.32.7 (2017-06-21)
+
+* **Updated** to use [bunsen-core@0.30.13](https://github.com/ciena-blueplanet/bunsen-core/pull/112)
+* **Fixed** the evc example
+
+
+# 14.32.6 (2017-06-20)
+**Fixed** issue where tabs would jump to back to the first tab when an array is added to.
+
+
+# 14.32.5 (2017-06-19)
+
+* **Fixed** a bug with the queryForCurrentValue select option which assumed the id was at the top level of the form's value.
+* **Fixed** `components/form.js` to allow extension of `classNames` rather than hard-setting it to only one class name.
+
+
+# 14.32.4 (2017-06-19)
+**Fixed** custom renderers in arrays as part of the `itemCell` configuration. 
+
+
+# 14.32.3 (2017-06-17)
+**Fixed** how BunsenModelPath handles appending string paths using dot notation. This was causing internal models to be added to the wrong spot in the bunsen model if the cell defining the internal model used dot notation.
+
+
+# 14.32.2 (2017-06-14)
+**Changed** model expansions and internal models to take effect in nested objects.
+**Added** support for internal models within arrays.
+
+
+
 # 14.32.1 (2017-06-09)
 - added a fix to arrays per @agonza40 and updated tests to ensure the values are actually shown
 

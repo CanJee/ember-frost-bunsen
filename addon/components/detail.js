@@ -33,6 +33,7 @@ import {
   deemberify,
   getMergedConfigRecursive,
   isRegisteredEmberDataModel,
+  removeInternalValues,
   validateRenderer
 } from '../utils'
 
@@ -171,8 +172,9 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
    * @returns {Object} cellConfigs with  precomputed model dependencies
    */
   @readOnly
-  @computed('renderModel', 'renderView.{cellDefinitions,cells}')
-  precomputedCells (bunsenModel, cellDefinitions, cells) {
+  @computed('renderModel', 'view')
+  precomputedCells (bunsenModel, view) {
+    const {cellDefinitions, cells} = this.getRenderView(bunsenModel, view)
     return cells.map((cell) => {
       const cellConfig = getMergedConfigRecursive(cell, cellDefinitions)
 
@@ -219,8 +221,8 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
   @readOnly
   @computed('cellTabs', 'selectedTabIndex')
   tabSelection (cellTabs, selectedTabIndex) {
-    const selectedTab = cellTabs.findBy('id', selectedTabIndex)
-    return selectedTab ? selectedTabIndex : cellTabs.get('0.id')
+    const selectedTab = cellTabs[selectedTabIndex]
+    return selectedTab ? selectedTab.id : cellTabs.get('0.id')
   },
 
   @readOnly
@@ -242,9 +244,12 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
   applyStoreUpdate ({lastAction, newProps, validationResult, value}) {
     if (Object.keys(newProps).length !== 0) {
       const model = newProps.renderModel || this.get('renderModel')
-      const view = newProps.view ? this.getRenderView(model, newProps.view) : this.get('renderView')
+      const baseModel = newProps.baseModel || this.get('baseModel')
+      const view = newProps.view
+        ? this.getRenderView(model, newProps.view)
+        : this.getRenderView(model, this.get('view'))
 
-      Object.assign(newProps, this.validateSchemas(model, view))
+      Object.assign(newProps, this.validateSchemas(baseModel, model, view))
 
       // Update component properties with newer state from redux store.
       this.setProperties(newProps)
@@ -253,7 +258,7 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
     // If the value changed inform consumer of the new form value. This occurs
     // when defaults are applied within the redux store.
     if ('renderValue' in newProps && this.onChange) {
-      const valueWithoutInternalState = value.without('_internal')
+      const valueWithoutInternalState = removeInternalValues(value)
       this.onChange(valueWithoutInternalState)
     }
 
@@ -441,6 +446,7 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
 
     if (!_.isEqual(this.get('renderModel'), state.model)) {
       newProps.renderModel = state.model
+      newProps.baseModel = state.baseModel
     }
 
     if (!_.isEqual(this.get('view'), state.view)) {
@@ -478,11 +484,14 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
       value: plainObjectValue
     })
 
+    const {baseModel, model: renderModel} = reduxStore.getState()
+
     // Make sure we have a reference to the store as well as the processed model
     // from the store.
     this.setProperties({
       reduxStore,
-      renderModel: reduxStore.getState().model
+      renderModel,
+      baseModel
     })
 
     // Subscribe for redux store updates (so we can react to changes)
@@ -491,11 +500,12 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
 
   /**
    * Validate schemas
+   * @param {BunsenModel} baseModel - bunsen model before conditions are evaluated
    * @param {BunsenModel} model - bunsen model
    * @param {BunsenView} view - bunsen view
    * @returns {Object} validation results
    */
-  validateSchemas (model, view) {
+  validateSchemas (baseModel, model, view) {
     const props = {
       invalidSchemaType: 'model',
       propValidationResult: validateModel(model, isRegisteredEmberDataModel)
@@ -510,7 +520,7 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
         invalidSchemaType: 'view',
         propValidationResult: validateView(
           view,
-          model,
+          baseModel,
           keys(renderers),
           validateRendererFn,
           isRegisteredEmberDataModel
@@ -596,10 +606,10 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
     let selectedTabLabel = this.get('selectedTabLabel')
     if (selectedTabLabel === undefined) return
 
-    const selectedTab = this.get('cellTabs').findBy('alias', selectedTabLabel)
+    const selectedTab = this.get('cellTabs').findIndex((item) => item.alias === selectedTabLabel)
     if (selectedTab === undefined) return
 
-    this.set('selectedTabIndex', selectedTab.id)
+    this.set('selectedTabIndex', selectedTab)
   },
 
   /**
@@ -629,10 +639,12 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
     // If the user/consumer has provided a value and it differs from the current store value
     // then we need to update the store to be the user/consumer supplied value
     if (hasUserProvidedValue) {
-      const reduxStoreValueWithoutInternal = Object.assign({}, reduxStoreValue)
-      delete reduxStoreValueWithoutInternal._internal
-
-      if (!_.isEqual(plainObjectValue, reduxStoreValueWithoutInternal)) {
+      if (reduxStoreValue !== null) {
+        const reduxStoreValueWithoutInternal = removeInternalValues(reduxStoreValue)
+        if (!_.isEqual(plainObjectValue, reduxStoreValueWithoutInternal)) {
+          dispatchValue = plainObjectValue
+        }
+      } else {
         dispatchValue = plainObjectValue
       }
     }
@@ -684,14 +696,15 @@ export default Component.extend(SpreadMixin, HookMixin, PropTypeMixin, {
 
     /**
      * Change selected tab/root cell
-     * @param {Number} tabIndex - index of root cell corresponding to tab
+     * @param {String} tabId - index of root cell corresponding to tab
      */
-    handleTabChange (tabIndex) {
+    handleTabChange (tabId) {
+      const cellTabs = this.get('cellTabs')
+      const tabIndex = cellTabs.findIndex((tab) => tab.id === tabId)
       this.set('selectedTabIndex', tabIndex)
 
       if (this.onTabChange) {
-        const cellTabs = this.get('cellTabs')
-        const selectedTab = cellTabs.findBy('id', tabIndex)
+        const selectedTab = cellTabs[tabIndex]
 
         this.onTabChange(selectedTab.alias)
       }
